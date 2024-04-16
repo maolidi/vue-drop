@@ -1,0 +1,131 @@
+{
+  "name": "vue-drop",
+  "displayName": "VueDrop",
+  "description": "Airdrop the Vue project into the production environment(linux only)",
+  "version": "1.0.1",
+  "repository": "https://github.com/maolidi/vue-drop",
+  "publisher": "maolidi",
+  "icon": "./src/assets/images/icon.png",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./main.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "VueDrop",
+      "properties": {
+        "VueDrop.server": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "default": [
+            {
+              "name": "localhost",
+              "host": "127.0.0.1",
+              "port": 22,
+              "username": "root",
+              "password": "<PASSWORD>",
+              "path": "/opt/dist"
+            }
+          ],
+          "description": "服务器列表"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "vue-drop.drop",
+        "title": "投递",
+        "icon": {
+          "light": "./src/assets/images/light/drop.svg",
+          "dark": "./src/assets/images/dark/drop.svg"
+        }
+      },
+      {
+        "command": "vue-drop.config",
+        "title": "设置",
+        "icon": {
+          "light": "./src/assets/images/light/config.svg",
+          "dark": "./src/assets/images/dark/config.svg"
+        }
+      },
+      {
+        "command": "vue-drop.refresh",
+        "title": "刷新",
+        "icon": {
+          "light": "./src/assets/images/light/refresh.svg",
+          "dark": "./src/assets/images/dark/refresh.svg"
+        }
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "vue-drop.refresh",
+          "when": "view == server",
+          "group": "navigation"
+        },
+        {
+          "command": "vue-drop.config",
+          "when": "view == server",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vue-drop.drop",
+          "when": "view == server",
+          "group": "inline"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vueDrop",
+          "title": "Vue Drop",
+          "icon": "./src/assets/images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vueDrop": [
+        {
+          "id": "server",
+          "name": "服务器列表"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "vueDrop.server",
+        "contents": "请先配置服务器信息",
+        "when": "vueDrop.server == []"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "pnpm run lint",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.12",
+    "ssh2": "^1.15.0"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.88.0",
+    "@vscode/test-cli": "^0.0.8",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3"
+  }
+}
