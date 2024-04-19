@@ -1,8 +1,8 @@
 {
   "name": "vue-drop",
   "displayName": "VueDrop",
-  "description": "Airdrop the Vue project into the production environment(linux only)",
-  "version": "1.0.1",
+  "description": "Airdrop the Vue project into the production environment",
+  "version": "2.0.0",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
   "icon": "./src/assets/images/icon.png",
@@ -19,6 +19,11 @@
       "type": "object",
       "title": "VueDrop",
       "properties": {
+        "VueDrop.npmBuild.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否执行npm run build"
+        },
         "VueDrop.server": {
           "type": "array",
           "items": {
@@ -117,7 +122,8 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.12",
-    "ssh2": "^1.15.0"
+    "ssh2": "^1.15.0",
+    "tar": "^7.0.1"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",

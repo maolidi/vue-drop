@@ -1,8 +1,11 @@
 const vscode = require("vscode");
-const { exec } = require("child_process");
-const fs = require("fs");
-const AdmZip = require("adm-zip");
-const { Client } = require("ssh2");
+const {
+  getVueVersion,
+  getBuildFolder,
+  runBuild,
+} = require("./../utils/buildHelper");
+const { createTar } = require("./../utils/compressHelper");
+const { dropFile } = require("./../utils/dropHelper");
 
 async function drop(argument) {
   try {
@@ -11,16 +14,27 @@ async function drop(argument) {
       return vscode.window.showInformationMessage("没有获取到服务器");
     }
     const rootPath = getProjectPath();
-    vscode.window.showInformationMessage("构建生产环境代码");
-    await runBuild(rootPath);
+    let version = await getVueVersion(rootPath);
+    if (!version) {
+      return vscode.window.showInformationMessage("该项目不是VUE项目");
+    }
+    let enableBuild = vscode.workspace
+      .getConfiguration("VueDrop")
+      .get("npmBuild.enabled");
+    if (enableBuild) {
+      vscode.window.showInformationMessage("构建生产环境代码");
+      await runBuild(rootPath);
+    }
+    let buildFloder = await getBuildFolder(rootPath);
     vscode.window.showInformationMessage("打包生产环境代码");
-    await createZip(rootPath);
+    // 统一使用tar格式
+    await createTar(rootPath, buildFloder);
     vscode.window.showInformationMessage("投递生产环境代码");
     await dropFile(rootPath, server);
     vscode.window.showInformationMessage("执行成功");
   } catch (error) {
     console.log(error);
-    vscode.window.showInformationMessage("执行失败");
+    vscode.window.showInformationMessage(`执行失败${error ? error : ""}`);
   }
 }
 function getProjectPath() {
@@ -38,119 +52,8 @@ function getProjectPath() {
     return null;
   }
 }
-function runBuild(rootPath) {
-  return new Promise((resolve, reject) => {
-    // 执行npm install命令
-    exec(
-      "npm run build",
-      {
-        cwd: rootPath,
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`执行的错误: ${error}`);
-          return reject(error);
-        }
-        console.log(`stdout: ${stdout}`);
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-        }
-        resolve();
-      }
-    );
-  });
-}
-function createZip(rootPath) {
-  // 文件夹路径
-  const folderPath = `${rootPath}/dist`;
-  // ZIP文件名
-  const zipFileName = `${rootPath}/dist/dist.zip`;
-  // 创建AdmZip对象
-  const zip = new AdmZip();
-  if (fs.existsSync(zipFileName)) {
-    // 文件存在
-    fs.unlinkSync(zipFileName);
-  }
-  zip.addLocalFolder(folderPath);
-  // get everything as a buffer
-  // var willSendthis = zip.toBuffer();
-  // or write everything to disk
-  zip.writeZip(zipFileName);
-}
-function dropFile(rootPath, server) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const conn = await getSSHConnect(server);
-      await uploadFile(rootPath, conn, server);
-      await extractFile(conn, server);
-      resolve();
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
 function getServer(label) {
   const config = vscode.workspace.getConfiguration("VueDrop").get("server");
   return config.find((item) => item.name == label);
-}
-function getSSHConnect(config) {
-  return new Promise((resolve, reject) => {
-    const conn = new Client();
-    conn
-      .connect({
-        host: config.host,
-        port: config.port,
-        username: config.username,
-        password: config.password,
-      })
-      .on("ready", () => {
-        console.log("Client :: ready");
-        resolve(conn);
-      })
-      .on("error", (error) => {
-        reject(error);
-        vscode.window.showInformationMessage("连接失败");
-      });
-  });
-}
-function uploadFile(rootPath, conn) {
-  return new Promise((resolve, reject) => {
-    conn.sftp((err, sftp) => {
-      if (err) throw err;
-      sftp.fastPut(`${rootPath}/dist/dist.zip`, "/opt/dist.zip", {}, (err) => {
-        if (err) {
-          vscode.window.showInformationMessage("文件上传失败");
-          return reject(err);
-        }
-        sftp.end();
-        console.log("Uploaded file successfully");
-        resolve();
-      });
-    });
-  });
-}
-function extractFile(conn, config) {
-  return new Promise((resolve) => {
-    conn.exec(
-      `rm ${config.path} -rf && unzip /opt/dist.zip -d ${config.path}`,
-      (err, stream) => {
-        if (err) throw err;
-        stream
-          .on("close", (code, signal) => {
-            console.log(
-              "Stream :: close :: code: " + code + ", signal: " + signal
-            );
-            conn.end();
-            resolve();
-          })
-          .on("data", (data) => {
-            console.log("STDOUT: " + data);
-          })
-          .stderr.on("data", (data) => {
-            console.log("STDERR: " + data);
-          });
-      }
-    );
-  });
 }
 module.exports = drop;
