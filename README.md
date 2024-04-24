@@ -17,7 +17,8 @@
    2. 其他版本
       1. 在[Win32-OpenSSH](https://github.com/PowerShell/Win32-OpenSSH)处参考 wiki 中的[安装说明](https://github.com/PowerShell/Win32-OpenSSH/wiki/Install-Win32-OpenSSH)离线安装
       2. 在[libarchive](https://www.libarchive.org/)处下载二进制包并在环境变量中添加 bin 目录，确保有 `bsdtar` 或 `tar` 命令
-      3. 配置完毕后重启服务器
+      3. 确认`OpenSSH`默认`shell`是`cmd`
+      4. 如果执行失败重启服务器或者降低`OpenSSH`版本，本插件在`OpenSSH-8.1.0.0` 版本中测试通过
 
 2. 在配置中填写服务器列表
 3. 左侧面板中点击对应服务器名称后边的投递按钮即可
@@ -39,6 +40,10 @@
         }
     ]
 ```
+
+### V2.1.1 2024/04/24
+
+1. 修改服务节点图标，区分 windows 和 linux
 
 ### V2.1.0 2024/04/24
 

@@ -2,7 +2,7 @@
   "name": "vue-drop",
   "displayName": "VueDrop",
   "description": "Airdrop the Vue project into the production environment",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
   "icon": "./src/assets/images/icon.png",

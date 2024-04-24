@@ -2,7 +2,7 @@ const vscode = require("vscode");
 const path = require("path");
 
 class TreeNode extends vscode.TreeItem {
-  constructor(label, collapsibleState) {
+  constructor(label, icon, collapsibleState) {
     super(label, collapsibleState);
     this.iconPath = {
       light: path.join(
@@ -12,17 +12,9 @@ class TreeNode extends vscode.TreeItem {
         "assets",
         "images",
         "light",
-        "server.svg"
+        icon
       ),
-      dark: path.join(
-        __filename,
-        "..",
-        "..",
-        "assets",
-        "images",
-        "dark",
-        "server.svg"
-      ),
+      dark: path.join(__filename, "..", "..", "assets", "images", "dark", icon),
     };
   }
 }
@@ -51,32 +43,25 @@ class serverProvider {
   getServer() {
     const server = vscode.workspace.getConfiguration("VueDrop").get("server");
     if (server) {
-      return server.map((item) => item.name);
+      return server.map((item) => {
+        let icon = item.path.indexOf(":") >= 0 ? "windows.svg" : "shell.svg";
+        return {
+          name: item.name,
+          icon,
+        };
+      });
     } else {
       return [];
     }
   }
   getChildren() {
     return this.tree.map(
-      (label) => new TreeNode(label, vscode.TreeItemCollapsibleState.None)
+      (item) =>
+        new TreeNode(item.name, item.icon, vscode.TreeItemCollapsibleState.None)
     );
   }
   getTreeItem(element) {
     return element;
-    // const treeItem = new vscode.TreeItem(
-    //   offset,
-    //   vscode.TreeItemCollapsibleState.None
-    // );
-    // treeItem.command = {
-    //   command: "extension.openJsonSelection",
-    //   title: "Action 1",
-    // };
-    // treeItem.iconPath = {
-    //   light: "./../assets/images/server.svg",
-    //   dark: "./../assets/images/server.svg",
-    // };
-    // // treeItem.contextValue = valueNode.type;
-    // return treeItem;
   }
 }
 
