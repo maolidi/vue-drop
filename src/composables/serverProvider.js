@@ -24,11 +24,6 @@ class TreeNode extends vscode.TreeItem {
         "server.svg"
       ),
     };
-    // this.command = {
-    //   command: "vue-drop.drop",
-    //   title: "执行空投任务",
-    //   arguments: [label],
-    // };
   }
 }
 

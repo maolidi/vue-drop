@@ -34,7 +34,9 @@ async function drop(argument) {
     vscode.window.showInformationMessage("执行成功");
   } catch (error) {
     console.log(error);
-    vscode.window.showInformationMessage(`执行失败${error ? error : ""}`);
+    vscode.window.showInformationMessage(
+      `执行失败${error ? error : ""},请重试`
+    );
   }
 }
 function getProjectPath() {

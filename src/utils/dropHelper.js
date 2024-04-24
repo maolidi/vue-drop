@@ -6,10 +6,6 @@ const { Client } = require("ssh2");
  * @returns
  */
 function getSSHConnect(server) {
-  // windows至少运行 Windows Server 2019 或 Windows 10（内部版本 1809）的版本
-  // https://learn.microsoft.com/zh-cn/windows-server/administration/openssh/openssh_install_firstuse?tabs=gui
-  // https://cloud.tencent.com/document/product/213/104394?from_cn_redirect=1#7f4563c3-fbc5-4e95-aa39-95981f68d10b
-  // https://zhuanlan.zhihu.com/p/673248450
   return new Promise((resolve, reject) => {
     const conn = new Client();
     conn
@@ -70,30 +66,37 @@ function uploadFile(rootPath, conn, server) {
  * @param {*} remoteFile 远程压缩包路径
  * @returns
  */
-function extractFile(conn, server, remoteFile) {
-  return new Promise((resolve) => {
+async function extractFile(conn, server, remoteFile) {
+  return new Promise((resolve, reject) => {
+    let system = server.path.indexOf(":") >= 0 ? "windows" : "linux";
     // linux
     let cmd = `rm ${server.path} -rf && mkdir -p ${server.path} && tar -xzvf ${remoteFile} -C ${server.path}`;
-    if (server.path.indexOf(":") >= 0) {
-      // windows
-      cmd = `(if exist ${server.path} (rd /s /q ${server.path})) && md ${server.path} && tar -xzvf ${remoteFile} -C ${server.path}`;
+    if (system === "windows") {
+      // windows 支持开源的bsdtar
+      cmd = `(if exist ${server.path} (rd /s /q ${server.path})) && md ${server.path} && (where bsdtar >nul 2>nul && (bsdtar -xzvf ${remoteFile} -C ${server.path}) || (tar -xzvf ${remoteFile} -C ${server.path}))`;
     }
     console.log("执行指令", cmd);
     conn.exec(cmd, (err, stream) => {
       if (err) throw err;
+      // 设置伪终端的编码方式为 utf-8
+      stream.setEncoding("utf-8");
       stream
         .on("close", (code, signal) => {
           console.log(
             "Stream :: close :: code: " + code + ", signal: " + signal
           );
           conn.end();
-          resolve();
+          if (code == 0) {
+            resolve();
+          } else {
+            reject();
+          }
         })
         .on("data", (data) => {
           console.log("STDOUT: " + data);
         })
         .stderr.on("data", (data) => {
-          console.log("STDERR: " + data);
+          console.error("STDEER: " + data);
         });
     });
   });

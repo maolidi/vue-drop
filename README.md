@@ -12,9 +12,12 @@
 
    > windows 环境
 
-   1. windows 基于 OpenSSH，需要服务器为 Windows Server 2019 或 Windows 10（内部版本 1809）以上的版本
-   2. 服务器上还需配置 OpenSSH 客户端，服务器配置参考：
-      [OpenSSH for Windows 概述](https://learn.microsoft.com/zh-cn/windows-server/administration/openssh/openssh_overview)
+   1. Windows Server 2019 或 Windows 10（内部版本 1809）以上的版本
+      1. 这个版本已经集成 `OpenSSH` 和 `tar`,还需手动配置 `OpenSSH`，参考 [OpenSSH 安装向导](https://learn.microsoft.com/zh-cn/windows-server/administration/openssh/openssh_install_firstuse?tabs=gui)
+   2. 其他版本
+      1. 在[Win32-OpenSSH](https://github.com/PowerShell/Win32-OpenSSH)处参考 wiki 中的[安装说明](https://github.com/PowerShell/Win32-OpenSSH/wiki/Install-Win32-OpenSSH)离线安装
+      2. 在[libarchive](https://www.libarchive.org/)处下载二进制包并在环境变量中添加 bin 目录，确保有 `bsdtar` 或 `tar` 命令
+      3. 配置完毕后重启服务器
 
 2. 在配置中填写服务器列表
 3. 左侧面板中点击对应服务器名称后边的投递按钮即可
@@ -36,6 +39,10 @@
         }
     ]
 ```
+
+### V2.1.0 2024/04/24
+
+1. 增加对低版本 windows 的支持
 
 ### V2.0.0 2024/04/19
 
