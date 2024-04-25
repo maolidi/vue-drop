@@ -46,7 +46,7 @@ class serverProvider {
       return server.map((item) => {
         let icon = item.path.indexOf(":") >= 0 ? "windows.svg" : "shell.svg";
         return {
-          name: item.name,
+          ...item,
           icon,
         };
       });
@@ -55,9 +55,16 @@ class serverProvider {
     }
   }
   getChildren() {
+    let isShowHost = vscode.workspace
+      .getConfiguration("VueDrop")
+      .get("showHost.enabled");
     return this.tree.map(
       (item) =>
-        new TreeNode(item.name, item.icon, vscode.TreeItemCollapsibleState.None)
+        new TreeNode(
+          isShowHost ? `${item.name}【${item.host}】` : item.name,
+          item.icon,
+          vscode.TreeItemCollapsibleState.None
+        )
     );
   }
   getTreeItem(element) {

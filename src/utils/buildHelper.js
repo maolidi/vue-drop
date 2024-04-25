@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { exec } = require("child_process");
+const { spawn } = require("child_process");
 
 /**
  * 判断项目是否vue并获取版本信息
@@ -55,25 +55,34 @@ function getBuildFolder(rootPath) {
   }, "dist");
 }
 function runBuild(rootPath) {
+  console.log(`Building: 0%`);
   return new Promise((resolve, reject) => {
-    // 执行npm build命令
-    exec(
-      "npm run build",
-      {
-        cwd: rootPath,
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`执行的错误: ${error}`);
-          return reject(error);
-        }
-        console.log(`stdout: ${stdout}`);
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-        }
+    const cmd = spawn("npm", ["run", "build"], {
+      cwd: rootPath,
+      shell: true,
+    });
+    let stderr = "";
+    // 处理子进程的错误
+    cmd.on("error", (error) => {
+      console.error(`Building Error: ${error}`);
+      reject(error);
+    });
+    cmd.stdout.on("data", (data) => {
+      console.log(`${data}`);
+    });
+
+    cmd.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+    cmd.on("close", (code) => {
+      if (code !== 0) {
+        console.error(`Building Error: ${stderr}`);
+        reject(stderr);
+      } else {
+        console.log(`Building: 100%`);
         resolve();
       }
-    );
+    });
   });
 }
 

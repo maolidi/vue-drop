@@ -11,31 +11,54 @@ async function drop(argument) {
   try {
     let server = getServer(argument.label);
     if (!server) {
-      return vscode.window.showInformationMessage("没有获取到服务器");
+      return vscode.window.showErrorMessage("没有获取到服务器");
     }
     const rootPath = getProjectPath();
+    // 判断是否vue项目
     let version = await getVueVersion(rootPath);
     if (!version) {
-      return vscode.window.showInformationMessage("该项目不是VUE项目");
+      return vscode.window.showErrorMessage("该项目不是VUE项目");
     }
+    // 判断是否要编译
     let enableBuild = vscode.workspace
       .getConfiguration("VueDrop")
       .get("npmBuild.enabled");
     if (enableBuild) {
-      vscode.window.showInformationMessage("构建生产环境代码");
-      await runBuild(rootPath);
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "编译代码",
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ increment: 0 });
+          await runBuild(rootPath);
+          progress.report({ increment: 100 });
+          return Promise.resolve();
+        }
+      );
     }
+    // 分析编译后代码的文件目录
     let buildFloder = await getBuildFolder(rootPath);
-    vscode.window.showInformationMessage("打包生产环境代码");
-    // 统一使用tar格式
-    await createTar(rootPath, buildFloder);
-    vscode.window.showInformationMessage("投递生产环境代码");
+    // 打包代码
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "打包代码",
+        cancellable: false,
+      },
+      (progress) => {
+        progress.report({ increment: 0 });
+        return createTar(rootPath, buildFloder, progress);
+      }
+    );
+    // 上传并发布
     await dropFile(rootPath, server);
     vscode.window.showInformationMessage("执行成功");
   } catch (error) {
     console.log(error);
-    vscode.window.showInformationMessage(
-      `执行失败${error ? error : ""},请重试`
+    vscode.window.showErrorMessage(
+      `执行失败${error ? "," + error : ""},请重试`
     );
   }
 }
@@ -55,6 +78,11 @@ function getProjectPath() {
   }
 }
 function getServer(label) {
+  // 如果有IP就把IP去掉
+  let result = /(.*)[【[]/g.exec(label);
+  if (result) {
+    label = result[1];
+  }
   const config = vscode.workspace.getConfiguration("VueDrop").get("server");
   return config.find((item) => item.name == label);
 }

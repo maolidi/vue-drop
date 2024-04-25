@@ -1,3 +1,4 @@
+const vscode = require("vscode");
 const { Client } = require("ssh2");
 
 /**
@@ -16,15 +17,15 @@ function getSSHConnect(server) {
         password: server.password,
       })
       .on("ready", () => {
-        console.log("Client :: ready");
+        console.log("SSH Client Ready");
         resolve(conn);
       })
       .on("error", (error) => {
-        console.log(error);
-        reject("连接失败");
+        console.log("SSH Client Error", error);
+        reject("服务器连接失败");
       })
       .on("close", () => {
-        console.log("断开连接");
+        console.log("SSH Client Close");
       });
   });
 }
@@ -35,7 +36,7 @@ function getSSHConnect(server) {
  * @param {*} server 服务器配置
  * @returns
  */
-function uploadFile(rootPath, conn, server) {
+function uploadFile(rootPath, conn, server, progress) {
   return new Promise((resolve, reject) => {
     // 随机文件名
     let group = /([^/\\]+)[/\\]?$/.exec(server.path);
@@ -45,17 +46,42 @@ function uploadFile(rootPath, conn, server) {
     if (server.path.indexOf(":") >= 0) {
       remoteFile = `C:\\Windows\\Temp\\${fileName}`;
     }
+    let lastTime = Date.now();
+    let lastIncrement = 0;
     conn.sftp((err, sftp) => {
       if (err) throw err;
-      sftp.fastPut(localFile, remoteFile, {}, (err) => {
-        if (err) {
-          console.log(err);
-          return reject("文件上传失败");
+      sftp.fastPut(
+        localFile,
+        remoteFile,
+        {
+          step: (totalTransferredBytes, chunk, totalBytes) => {
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - lastTime;
+            if (elapsedTime > 200) {
+              let increment =
+                !isNaN(totalBytes) && totalBytes !== 0
+                  ? Math.round((totalTransferredBytes / totalBytes) * 100)
+                  : 0;
+              progress.report({
+                message: `${increment}%`,
+                increment: increment - lastIncrement,
+              });
+              lastTime = currentTime;
+              lastIncrement = increment;
+              console.log(`Progress: ${increment}%`);
+            }
+          },
+        },
+        (err) => {
+          if (err) {
+            console.log(err);
+            return reject("文件上传失败");
+          }
+          sftp.end();
+          console.log("Uploaded file successfully");
+          resolve(remoteFile);
         }
-        sftp.end();
-        console.log("Uploaded file successfully");
-        resolve(remoteFile);
-      });
+      );
     });
   });
 }
@@ -110,9 +136,46 @@ async function extractFile(conn, server, remoteFile) {
 function dropFile(rootPath, server) {
   return new Promise(async (resolve, reject) => {
     try {
-      const conn = await getSSHConnect(server);
-      let remoteFile = await uploadFile(rootPath, conn, server);
-      await extractFile(conn, server, remoteFile);
+      // 连接服务器
+      const conn = await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "连接服务器",
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ increment: 0 });
+          const conn = await getSSHConnect(server);
+          progress.report({ increment: 100 });
+          return Promise.resolve(conn);
+        }
+      );
+      // 上传
+      let remoteFile = await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "上传代码",
+          cancellable: false,
+        },
+        (progress) => {
+          progress.report({ increment: 0 });
+          return uploadFile(rootPath, conn, server, progress);
+        }
+      );
+      // 部署
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "部署代码",
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ increment: 0 });
+          await extractFile(conn, server, remoteFile, progress);
+          progress.report({ increment: 100 });
+          return Promise.resolve();
+        }
+      );
       resolve();
     } catch (error) {
       reject(error);
