@@ -2,7 +2,7 @@
   "name": "vue-drop",
   "displayName": "VueDrop",
   "description": "Airdrop the Vue project into the production environment",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
   "icon": "./src/assets/images/icon.png",
@@ -23,6 +23,11 @@
           "type": "boolean",
           "default": true,
           "description": "是否执行npm run build"
+        },
+        "VueDrop.showHost.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否显示服务器地址"
         },
         "VueDrop.server": {
           "type": "array",
@@ -121,9 +126,9 @@
     "test": "vscode-test"
   },
   "dependencies": {
-    "adm-zip": "^0.5.12",
     "ssh2": "^1.15.0",
-    "tar": "^7.0.1"
+    "tar": "^7.0.1",
+    "through2": "^4.0.2"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
