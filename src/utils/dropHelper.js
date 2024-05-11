@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const { Client } = require("ssh2");
+const { clean } = require("./cleanHelper");
 
 /**
  * 建立ssh连接
@@ -32,16 +33,17 @@ function getSSHConnect(server) {
 /**
  * 上传文件
  * @param {*} rootPath 项目根目录
+ * @param {*} buildFloder 打包路径
  * @param {*} conn 连接实例
  * @param {*} server 服务器配置
  * @returns
  */
-function uploadFile(rootPath, conn, server, progress) {
+function uploadFile(rootPath, buildFloder, conn, server, progress) {
   return new Promise((resolve, reject) => {
     // 随机文件名
     let group = /([^/\\]+)[/\\]?$/.exec(server.path);
     let fileName = `dist${group ? "_" + group[1] : ""}.tar.gz`;
-    let localFile = `${rootPath}/dist/dist.tar.gz`;
+    let localFile = `${rootPath}/${buildFloder}/dist.tar.gz`;
     let remoteFile = `/var/tmp/${fileName}`;
     if (server.path.indexOf(":") >= 0) {
       remoteFile = `C:\\Windows\\Temp\\${fileName}`;
@@ -130,10 +132,11 @@ async function extractFile(conn, server, remoteFile) {
 /**
  * 空投
  * @param {*} rootPath 项目根目录
+ * @param {*} buildFloder 打包路径
  * @param {*} server 服务器配置
  * @returns
  */
-function dropFile(rootPath, server) {
+function dropFile(rootPath, buildFloder, server) {
   return new Promise(async (resolve, reject) => {
     try {
       // 连接服务器
@@ -159,7 +162,7 @@ function dropFile(rootPath, server) {
         },
         (progress) => {
           progress.report({ increment: 0 });
-          return uploadFile(rootPath, conn, server, progress);
+          return uploadFile(rootPath, buildFloder, conn, server, progress);
         }
       );
       // 部署
@@ -176,6 +179,8 @@ function dropFile(rootPath, server) {
           return Promise.resolve();
         }
       );
+      // 删除缓存
+      await clean(rootPath, buildFloder);
       resolve();
     } catch (error) {
       reject(error);

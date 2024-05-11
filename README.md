@@ -26,9 +26,9 @@
 ## 插件配置
 
 ```js
-- 是否启用自动编译：false则跳过build阶段
+- 是否启用自动编译：插件基于nodejs V18，如果项目nodejs大版本不一致有可能出现build失败，可设置为false跳过build阶段
     VueDrop.npmBuild.enabled: true/false
-- 是否显示服务器IP
+- 是否显示服务器IP：
     VueDrop.showHost.enabled: true/false
 - 服务器列表：
     VueDrop.server: [
@@ -42,32 +42,5 @@
         }
     ]
 ```
-
-### V2.2.0 2024/04/25
-
-1. 增加配置项`VueDrop.showHost.enabled`，是否显示服务器 IP
-2. 压缩环节、上传环节、投递环节增加进度条提示
-3. 优化编译环节
-
-### V2.1.1 2024/04/24
-
-1. 修改服务节点图标，区分 windows 和 linux
-
-### V2.1.0 2024/04/24
-
-1. 增加对低版本 windows 的支持
-
-### V2.0.0 2024/04/19
-
-1. 增加对 windows 的支持
-
-### V1.1.0 2024/04/17
-
-1. 打包路径支持从`vite.config.js`、`vue.config.js`中自动分析
-2. 增加配置项`VueDrop.npmBuild.enabled`，是否需要执行`npm run build`命令
-
-### V1.0.1 2024/04/16
-
-1. 修复生产环境无法获取到 module
 
 **Enjoy!**

@@ -53,7 +53,7 @@ async function drop(argument) {
       }
     );
     // 上传并发布
-    await dropFile(rootPath, server);
+    await dropFile(rootPath, buildFloder, server);
     vscode.window.showInformationMessage("执行成功");
   } catch (error) {
     console.log(error);
