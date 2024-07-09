@@ -8,6 +8,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - 提高对 vue2 的 build 兼容性
 
+## [2.3.0] - 2024-07-09
+
+### Changed
+
+- 服务器节点支持多级目录
+
 ## [2.2.1] - 2024-05-11
 
 ### Changed

@@ -2,7 +2,7 @@
   "name": "vue-drop",
   "displayName": "VueDrop",
   "description": "Airdrop the Vue project into the production environment",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
   "icon": "./src/assets/images/icon.png",
@@ -90,7 +90,7 @@
       "view/item/context": [
         {
           "command": "vue-drop.drop",
-          "when": "view == server",
+          "when": "view == server && viewItem == serverNode",
           "group": "inline"
         }
       ]

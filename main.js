@@ -21,9 +21,13 @@ function activate(context) {
     "vue-drop.drop",
     function (argument) {
       // The code you place here will be executed every time your command is executed
-      drop(argument);
       // Display a message box to the user
       // vscode.window.showInformationMessage("Hello World from Vue Drop!");
+      if (argument.contextValue == "serverNode") {
+        drop(argument);
+      } else {
+        vscode.window.showInformationMessage("请选择一个服务器");
+      }
     }
   );
 

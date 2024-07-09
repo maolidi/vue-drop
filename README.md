@@ -30,8 +30,21 @@
     VueDrop.npmBuild.enabled: true/false
 - 是否显示服务器IP：
     VueDrop.showHost.enabled: true/false
-- 服务器列表：
+- 服务器列表（支持多级目录）：
     VueDrop.server: [
+        {
+            "name":"项目组1",
+            "children":[
+                {
+                    "name": "项目1",
+                    "host": "127.0.0.1",
+                    "port": 22,
+                    "username": "root",
+                    "password": "<PASSWORD>",
+                    "path": "/opt/dist"
+                }
+            ]
+        },
         {
             "name": "localhost",
             "host": "127.0.0.1",
