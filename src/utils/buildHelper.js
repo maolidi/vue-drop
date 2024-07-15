@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { spawn } = require("child_process");
+const kill = require("tree-kill");
 
 /**
  * 判断项目是否vue并获取版本信息
@@ -54,12 +55,16 @@ function getBuildFolder(rootPath) {
     return folder;
   }, "dist");
 }
-function runBuild(rootPath) {
+function runBuild(rootPath, token) {
   console.log(`Building: 0%`);
   return new Promise((resolve, reject) => {
     const cmd = spawn("npm", ["run", "build"], {
       cwd: rootPath,
       shell: true,
+    });
+    // 监听取消请求
+    token.onCancellationRequested(() => {
+      kill(cmd.pid);
     });
     let stderr = "";
     // 处理子进程的错误

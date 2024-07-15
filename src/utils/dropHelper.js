@@ -7,9 +7,13 @@ const { clean } = require("./cleanHelper");
  * @param {*} server 服务器配置
  * @returns
  */
-function getSSHConnect(server) {
+function getSSHConnect(server, token) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
+    token.onCancellationRequested(() => {
+      conn.destroy();
+      reject("用户取消操作");
+    });
     conn
       .connect({
         host: server.host,
@@ -38,8 +42,12 @@ function getSSHConnect(server) {
  * @param {*} server 服务器配置
  * @returns
  */
-function uploadFile(rootPath, buildFloder, conn, server, progress) {
+function uploadFile(rootPath, buildFloder, conn, server, progress, token) {
   return new Promise((resolve, reject) => {
+    token.onCancellationRequested(() => {
+      conn.destroy();
+      reject("用户取消操作");
+    });
     // 随机文件名
     let group = /([^/\\]+)[/\\]?$/.exec(server.path);
     let fileName = `dist${group ? "_" + group[1] : ""}.tar.gz`;
@@ -94,7 +102,7 @@ function uploadFile(rootPath, buildFloder, conn, server, progress) {
  * @param {*} remoteFile 远程压缩包路径
  * @returns
  */
-async function extractFile(conn, server, remoteFile) {
+async function extractFile(conn, server, remoteFile, token) {
   return new Promise((resolve, reject) => {
     let system = server.path.indexOf(":") >= 0 ? "windows" : "linux";
     // linux
@@ -106,6 +114,10 @@ async function extractFile(conn, server, remoteFile) {
     console.log("执行指令", cmd);
     conn.exec(cmd, (err, stream) => {
       if (err) throw err;
+      token.onCancellationRequested(() => {
+        conn.destroy();
+        reject("用户取消操作");
+      });
       // 设置伪终端的编码方式为 utf-8
       stream.setEncoding("utf-8");
       stream
@@ -144,13 +156,15 @@ function dropFile(rootPath, buildFloder, server) {
         {
           location: vscode.ProgressLocation.Notification,
           title: "连接服务器",
-          cancellable: false,
+          cancellable: true,
         },
-        async (progress) => {
+        async (progress, token) => {
           progress.report({ increment: 0 });
-          const conn = await getSSHConnect(server);
+          const conn = await getSSHConnect(server, token);
           progress.report({ increment: 100 });
-          return Promise.resolve(conn);
+          return token.isCancellationRequested
+            ? Promise.reject("用户取消操作")
+            : Promise.resolve(conn);
         }
       );
       // 上传
@@ -158,11 +172,18 @@ function dropFile(rootPath, buildFloder, server) {
         {
           location: vscode.ProgressLocation.Notification,
           title: "上传代码",
-          cancellable: false,
+          cancellable: true,
         },
-        (progress) => {
+        (progress, token) => {
           progress.report({ increment: 0 });
-          return uploadFile(rootPath, buildFloder, conn, server, progress);
+          return uploadFile(
+            rootPath,
+            buildFloder,
+            conn,
+            server,
+            progress,
+            token
+          );
         }
       );
       // 部署
@@ -170,13 +191,15 @@ function dropFile(rootPath, buildFloder, server) {
         {
           location: vscode.ProgressLocation.Notification,
           title: "部署代码",
-          cancellable: false,
+          cancellable: true,
         },
-        async (progress) => {
+        async (progress, token) => {
           progress.report({ increment: 0 });
-          await extractFile(conn, server, remoteFile, progress);
+          await extractFile(conn, server, remoteFile, token);
           progress.report({ increment: 100 });
-          return Promise.resolve();
+          return token.isCancellationRequested
+            ? Promise.reject("用户取消操作")
+            : Promise.resolve();
         }
       );
       // 删除缓存

@@ -2,7 +2,7 @@
   "name": "vue-drop",
   "displayName": "VueDrop",
   "description": "Airdrop the Vue project into the production environment",
-  "version": "2.3.0",
+  "version": "2.4.1",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
   "icon": "./src/assets/images/icon.png",
@@ -128,7 +128,8 @@
   "dependencies": {
     "ssh2": "^1.15.0",
     "tar": "^7.0.1",
-    "through2": "^4.0.2"
+    "through2": "^4.0.2",
+    "tree-kill": "^1.2.2"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",

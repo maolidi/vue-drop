@@ -28,13 +28,19 @@ async function drop(argument) {
         {
           location: vscode.ProgressLocation.Notification,
           title: "编译代码",
-          cancellable: false,
+          cancellable: true,
         },
-        async (progress) => {
+        async (progress, token) => {
           progress.report({ increment: 0 });
-          await runBuild(rootPath);
+          try {
+            await runBuild(rootPath, token);
+          } catch (error) {
+            console.log(error);
+          }
           progress.report({ increment: 100 });
-          return Promise.resolve();
+          return token.isCancellationRequested
+            ? Promise.reject("用户取消操作")
+            : Promise.resolve();
         }
       );
     }
@@ -45,11 +51,11 @@ async function drop(argument) {
       {
         location: vscode.ProgressLocation.Notification,
         title: "打包代码",
-        cancellable: false,
+        cancellable: true,
       },
-      (progress) => {
+      (progress, token) => {
         progress.report({ increment: 0 });
-        return createTar(rootPath, buildFloder, progress);
+        return createTar(rootPath, buildFloder, progress, token);
       }
     );
     // 上传并发布
@@ -57,9 +63,7 @@ async function drop(argument) {
     vscode.window.showInformationMessage("执行成功");
   } catch (error) {
     console.log(error);
-    vscode.window.showErrorMessage(
-      `执行失败${error ? "," + error : ""},请重试`
-    );
+    vscode.window.showErrorMessage(`执行失败${error ? "，" + error : ""}`);
   }
 }
 function getProjectPath() {
@@ -77,13 +81,29 @@ function getProjectPath() {
     return null;
   }
 }
-function getServer(label) {
-  // 如果有IP就把IP去掉
+function getServer(
+  label,
+  serverList = vscode.workspace.getConfiguration("VueDrop").get("server")
+) {
+  // Remove IP from label if it exists
+  // label = label.replace(/【.*]/, "");
   let result = /(.*)[【[]/g.exec(label);
   if (result) {
     label = result[1];
   }
-  const config = vscode.workspace.getConfiguration("VueDrop").get("server");
-  return config.find((item) => item.name == label);
+
+  // Use a for loop instead of a for...of loop for better performance
+  for (let i = 0; i < serverList.length; i++) {
+    const item = serverList[i];
+    if (item.children) {
+      const server = getServer(label, item.children);
+      if (server) {
+        return server;
+      }
+    } else if (item.name === label) {
+      return item;
+    }
+  }
+  return null;
 }
 module.exports = drop;

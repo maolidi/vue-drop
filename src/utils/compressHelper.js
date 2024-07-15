@@ -9,7 +9,7 @@ const through2 = require("through2");
  * @param {string} buildFloder 需要打包的文件
  * @returns
  */
-function createTar(rootPath, buildFloder = "dist", progress) {
+function createTar(rootPath, buildFloder = "dist", progress, token) {
   return new Promise(async (resolve, reject) => {
     // 文件夹路径
     const sourceFolder = `${rootPath}/${buildFloder}`;
@@ -29,6 +29,12 @@ function createTar(rootPath, buildFloder = "dist", progress) {
     );
     // 创建一个可写的文件流
     const writeStream = fs.createWriteStream(outputFile);
+    // 监听取消请求
+    token.onCancellationRequested(() => {
+      pack.destroy();
+      writeStream.end();
+      reject("用户取消操作");
+    });
     // 初始化进度跟踪参数
     let totalCompressedBytes = 0;
     let totalBytes = await getDirectorySize(sourceFolder);

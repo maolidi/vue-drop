@@ -8,6 +8,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - 提高对 vue2 的 build 兼容性
 
+## [2.4.1] - 2024-07-10
+
+### Added
+
+- 增加取消任务按钮
+
+### Fixed
+
+- 修复多级目录下无法投递
+
 ## [2.3.0] - 2024-07-09
 
 ### Changed
