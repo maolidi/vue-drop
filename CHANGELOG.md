@@ -8,6 +8,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - 提高对 vue2 的 build 兼容性
 
+## [2.5.0] - 2025-02-24
+
+### Added
+
+- 增加转发服务，需要在服务器上安装[vue-drop-server](https://github.com/maolidi/vue-drop-server)，插件服务器配置需要增加`useServer: true`
+
 ## [2.4.1] - 2024-07-10
 
 ### Added

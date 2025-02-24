@@ -21,6 +21,9 @@
       4. 如果执行失败重启服务器或者降低`OpenSSH`版本，本插件在`OpenSSH-8.1.0.0` 版本中测试通过
 
 2. 在配置中填写服务器列表
+
+   如果无法通过 ssh 连接服务器，可以在服务器上安装[vue-drop-server](https://github.com/maolidi/vue-drop-server)转发服务，插件服务器配置需要增加`useServer: true`
+
 3. 左侧面板中点击对应服务器名称后边的投递按钮即可
 
 ## 插件配置
@@ -41,7 +44,8 @@
                     "port": 22,
                     "username": "root",
                     "password": "<PASSWORD>",
-                    "path": "/opt/dist"
+                    "path": "/opt/dist",
+                    "useServer":false
                 }
             ]
         },
@@ -51,7 +55,8 @@
             "port": 22,
             "username": "root",
             "password": "<PASSWORD>",
-            "path": "/opt/dist"
+            "path": "/opt/dist",
+            "useServer":false
         }
     ]
 ```

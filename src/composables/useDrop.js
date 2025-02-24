@@ -5,7 +5,7 @@ const {
   runBuild,
 } = require("./../utils/buildHelper");
 const { createTar } = require("./../utils/compressHelper");
-const { dropFile } = require("./../utils/dropHelper");
+const { dropFile, dropFileByServer } = require("./../utils/dropHelper");
 
 async function drop(argument) {
   try {
@@ -59,7 +59,11 @@ async function drop(argument) {
       }
     );
     // 上传并发布
-    await dropFile(rootPath, buildFloder, server);
+    if (server.useServer) {
+      await dropFileByServer(rootPath, buildFloder, server);
+    } else {
+      await dropFile(rootPath, buildFloder, server);
+    }
     vscode.window.showInformationMessage("执行成功");
   } catch (error) {
     console.log(error);

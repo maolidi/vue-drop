@@ -2,7 +2,7 @@
   "name": "vue-drop",
   "displayName": "VueDrop",
   "description": "Airdrop the Vue project into the production environment",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
   "icon": "./src/assets/images/icon.png",
@@ -126,6 +126,8 @@
     "test": "vscode-test"
   },
   "dependencies": {
+    "axios": "^1.7.9",
+    "form-data": "^4.0.2",
     "ssh2": "^1.15.0",
     "tar": "^7.0.1",
     "through2": "^4.0.2",
