@@ -2,10 +2,10 @@
   "name": "vue-drop",
   "displayName": "VueDrop",
   "description": "Airdrop the Vue project into the production environment",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "repository": "https://github.com/maolidi/vue-drop",
   "publisher": "maolidi",
-  "icon": "./src/assets/images/icon.png",
+  "icon": "src/assets/images/icon.png",
   "engines": {
     "vscode": "^1.88.0"
   },
@@ -41,7 +41,8 @@
               "port": 22,
               "username": "root",
               "password": "<PASSWORD>",
-              "path": "/opt/dist"
+              "path": "/opt/dist",
+              "useServer": false
             }
           ],
           "description": "服务器列表"

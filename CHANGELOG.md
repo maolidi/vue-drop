@@ -8,6 +8,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - 提高对 vue2 的 build 兼容性
 
+## [2.5.1] - 2025-02-25
+
+### Fixed
+
+- 修复无法打包
+
 ## [2.5.0] - 2025-02-24
 
 ### Added
