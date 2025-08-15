@@ -45,7 +45,7 @@ async function drop(argument) {
       );
     }
     // 分析编译后代码的文件目录
-    let buildFloder = await getBuildFolder(rootPath);
+    let buildFloder = server.buildFloder || (await getBuildFolder(rootPath));
     // 打包代码
     await vscode.window.withProgress(
       {

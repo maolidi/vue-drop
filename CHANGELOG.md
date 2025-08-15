@@ -8,6 +8,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - 提高对 vue2 的 build 兼容性
 
+## [2.5.2] - 2025-08-15
+
+### Added
+
+- 新增参数`"buildFloder":"examples"`，这个参数可以覆盖默认打包路径，方便部署`example`、`docs`
+
 ## [2.5.1] - 2025-02-25
 
 ### Fixed
